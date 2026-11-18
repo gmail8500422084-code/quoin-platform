@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Quoin</title>
+  <style>
+    :root {
+      --or: #FF6B2B;
+      --tl: #14B8A6;
+      --nv: #0F172A;
+      --cr: #FFFCF8;
+      --bg: #0A101C;
+      --tx: #FFFCF8;
+      --mu: #8FA0B8;
+      --gl: rgba(20, 30, 48, .85);
+      --bd: rgba(20, 184, 166, .28);
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px)
+    }
+
+    @media(prefers-color-scheme:dark) {
+      :root:not([data-theme=light]) {
+        --bg: #0A101C
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--tx);
+      overflow: hidden
+    }
+
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(110px);
+      opacity: .16;
+      z-index: 0
+    }
+
+    .b1 {
+      width: 380px;
+      height: 380px;
+      background: var(--or);
+      top: -80px;
+      left: -80px
+    }
+
+    .b2 {
+      width: 420px;
+      height: 420px;
+      background: var(--tl);
+      bottom: -120px;
+      right: -100px
+    }
+
+    .glass {
+      background: var(--gl);
+      border: 1px solid var(--bd);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 16px;
+      padding: 16px
+    }
+
+    #auth {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow: auto
+    }
+
+    #auth .glass {
+      width: 100%;
+      max-width: 400px
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: .5px
+    }
+
+    .logo i {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--or), var(--tl));
+      display: grid;
+      place-items: center;
+      font-style: normal;
+      color: #fff;
+      overflow: hidden
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 10px;
+      border: 1px solid var(--bd);
+      background: rgba(255, 252, 248, .07);
+      color: var(--tx);
+      font: inherit
+    }
+
+    input::placeholder {
+      color: var(--mu)
+    }
+
+    select option {
+      color: #000
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 14px;
+      color: #fff;
+      background: var(--or)
+    }
+
+    button.t {
+      background: var(--tl)
+    }
+
+    button.g {
+      background: transparent;
+      border: 1px solid var(--bd);
+      color: var(--tx)
+    }
+
+    button.d {
+      background: #c0392b
+    }
+
+    button:hover {
+      animation: blink .7s ease-in-out infinite
+    }
+
+    @keyframes blink {
+      50% {
+        box-shadow: 0 0 14px 3px var(--or);
+        filter: brightness(1.25)
+      }
+    }
+
+    button.t:hover {
+      --x: 1
+    }
+
+    .pw {
+      position: relative
+    }
+
+    .pw button {
+      position: absolute;
+      right: 4px;
+      top: 6px;
+      padding: 5px 9px;
+      background: transparent
+    }
+
+    a.l {
+      color: var(--tl);
+      cursor: pointer;
+      font-size: 13px
+    }
+
+    #app {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: none
+    }
+
+    #side {
+      width: 230px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-radius: 0;
+      transition: .25s;
+      flex-shrink: 0
+    }
+
+    #side.h {
+      width: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 0
+    }
+
+    #side .n {
+      background: transparent;
+      text-align: left;
+      border-radius: 10px;
+      color: var(--tx)
+    }
+
+    #side .n.on {
+      background: linear-gradient(90deg, var(--or), #ff8f5a)
+    }
+
+    #side .n:hover {
+      background: var(--tl);
+      animation: blink .7s infinite
+    }
+
+    .user {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px
+    }
+
+    .user .logo {
+      font-size: 14px
+    }
+
+    main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100%
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px
+    }
+
+    .top h2 {
+      margin: 0;
+      font-size: 18px;
+      flex: 1
+    }
+
+    .body {
+      flex: 1;
+      overflow: auto;
+      padding: 0 16px 80px
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px
+    }
+
+    .stat {
+      --c: #14B8A6;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--c) 30%, transparent), var(--gl));
+      border-color: color-mix(in srgb, var(--c) 55%, transparent)
+    }
+
+    .stat:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background: var(--c)
+    }
+
+    .stat:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 28px color-mix(in srgb, var(--c) 45%, transparent)
+    }
+
+    .stat .ic {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 19px;
+      background: var(--c);
+      box-shadow: 0 4px 14px color-mix(in srgb, var(--c) 60%, transparent)
+    }
+
+    .stat .hd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .stat b {
+      display: block;
+      font-size: 28px;
+      margin: 8px 0 2px
+    }
+
+    .stat span {
+      color: var(--mu);
+      font-size: 13px
+    }
+
+    .stat small {
+      color: var(--c);
+      font-weight: 700;
+      font-size: 12px;
+      filter: brightness(1.25)
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px
+    }
+
+    .tw {
+      overflow-x: auto
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px
+    }
+
+    td,
+    th {
+      padding: 7px;
+      border-bottom: 1px solid var(--bd);
+      text-align: left
+    }
+
+    td input,
+    td select {
+      margin: 0;
+      min-width: 70px
+    }
+
+    .tag {
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 12px;
+      background: var(--tl);
+      color: #fff
+    }
+
+    .tag.o {
+      background: var(--or)
+    }
+
+    .tot {
+      text-align: right;
+      line-height: 1.7
+    }
+
+    .acts button {
+      padding: 5px 9px;
+      margin: 2px;
+      font-size: 12px
+    }
+
+    #bot {
+      position: fixed;
+      right: 16px;
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      z-index: 5
+    }
+
+    #bot>button {
+      border-radius: 50%;
+      width: 52px;
+      height: 52px;
+      background: var(--tl);
+      font-size: 22px
+    }
+
+    #chat {
+      display: none;
+      position: absolute;
+      bottom: 62px;
+      right: 0;
+      width: 330px;
+      max-width: 88vw;
+      padding: 0;
+      overflow: hidden
+    }
+
+    .ch0 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: linear-gradient(90deg, var(--or), #ff8f5a)
+    }
+
+    .ch0 b {
+      flex: 1
+    }
+
+    .ch0 a {
+      cursor: pointer;
+      font-size: 12px
+    }
+
+    #cm {
+      max-height: 260px;
+      min-height: 120px;
+      overflow: auto;
+      padding: 10px;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    .bb {
+      max-width: 85%;
+      padding: 7px 10px;
+      border-radius: 12px
+    }
+
+    .bb.b {
+      background: rgba(20, 184, 166, .2);
+      align-self: flex-start
+    }
+
+    .bb.u {
+      background: var(--or);
+      align-self: flex-end
+    }
+
+    #cc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 10px 8px
+    }
+
+    #cc .ch {
+      padding: 5px 10px;
+      font-size: 12px;
+      border-radius: 20px
+    }
+
+    .ir {
+      display: flex;
+      gap: 6px;
+      padding: 8px;
+      border-top: 1px solid var(--bd)
+    }
+
+    .ir input {
+      margin: 0
+    }
+
+    .ir button {
+      padding: 6px 10px
+    }
+
+    #mic.rec {
+      background: #c0392b;
+      animation: blink .7s infinite
+    }
+
+    .stat {
+      background: linear-gradient(160deg, rgba(255, 255, 255, .04), transparent);
+      border: 1.5px solid color-mix(in srgb, var(--c) 70%, transparent);
+      box-shadow: inset 0 0 26px color-mix(in srgb, var(--c) 10%, transparent)
+    }
+
+    .stat:before {
+      display: none
+    }
+
+    .stat .ic {
+      border-radius: 10px;
+      width: 34px;
+      height: 34px;
+      font-size: 16px
+    }
+
+    .stat .hd {
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+      gap: 10px
+    }
+
+    .stat b {
+      font-size: 34px;
+      letter-spacing: -1px;
+      margin: 12px 0 4px
+    }
+
+    .stat small {
+      color: #22C55E;
+      filter: none;
+      font-size: 11px
+    }
+
+    #side .n {
+      font-size: 13px;
+      color: #cbd5e1
+    }
+
+    #side .n.on {
+      background: var(--or);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(255, 107, 43, .35)
+    }
+
+    .act {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, .07);
+      font-size: 13px
+    }
+
+    .act .ic2 {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      background: var(--c);
+      flex-shrink: 0
+    }
+
+    .act small {
+      color: var(--mu);
+      display: block;
+      font-size: 11px
+    }
+
+    .bdg {
+      margin-left: auto;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      background: color-mix(in srgb, var(--c) 25%, transparent);
+      color: var(--c);
+      filter: brightness(1.3)
+    }
+
+    .ph {
+      color: var(--mu);
+      font-size: 12px;
+      margin: 2px 0 10px
+    }
+
+    .acc {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px;
+      border: 1px solid var(--bd);
+      border-radius: 12px;
+      margin: 6px 0;
+      cursor: pointer
+    }
+
+    .acc.on {
+      border-color: var(--or);
+      background: rgba(255, 107, 43, .1)
+    }
+
+    .acc small {
+      display: block;
+      color: var(--mu);
+      font-size: 11px
+    }
+
+    .av {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--or), var(--tl));
+      display: grid;
+      place-items: center;
+      font-style: normal;
+      font-weight: 700;
+      overflow: hidden;
+      flex-shrink: 0
+    }
+
+    .av img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    #pr {
+      display: none
+    }
+
+    @media(max-width:700px) {
+      #side {
+        position: fixed;
+        z-index: 6;
+        height: 100%;
+        background: #0F172Af0
+      }
+
+      #side.h {
+        width: 0
+      }
+    }
+
+    @media print {
+      body {
+        overflow: visible;
+        background: #fff
+      }
+
+      #auth,
+      #app,
+      .blob,
+      #bot {
+        display: none !important
+      }
+
+      #pr {
+        display: block;
+        color: #000;
+        padding: 20px;
+        font-size: 13px
+      }
+
+      #pr td,
+      #pr th {
+        border-bottom: 1px solid #999
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div id="auth">
+    <div class="glass">
+      <div style="text-align:center"><img id="alg" alt="Quoin"
+          style="width:92px;height:92px;border-radius:22px;box-shadow:0 8px 28px rgba(255,107,43,.35)"></div>
+      <h3 id="at" style="text-align:center;margin:14px 0 6px">Log in</h3>
+      <div id="af"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px"><a class="l" id="sw"></a><a class="l"
+          id="fp">Forgot password?</a></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="g" id="go" style="flex:1">Continue with
+          Google</button><button class="g" id="gu" style="flex:1">Guest login</button></div>
+      <div id="am" style="color:var(--or);font-size:13px;margin-top:8px"></div>
+    </div>
+  </div>
+  <div id="app">
+    <div style="display:flex;height:100%">
+      <aside id="side" class="glass">
+        <div class="logo" id="slogo"></div>
+        <div id="nav"></div>
+        <div class="user">
+          <div class="logo" id="su"></div><button class="g" id="lo"
+            style="margin-left:auto;padding:5px 9px">Logout</button>
+        </div>
+      </aside>
+      <main>
+        <div class="top"><button class="g" id="tg" title="Hide/show bar">⋮</button>
+          <h2 id="ttl"></h2>
+        </div>
+        <div class="body" id="v"></div>
+      </main>
+    </div>
+    <div id="bot">
+      <div id="chat" class="glass">
+        <div class="ch0"><b>✦ Quoin AI</b><a id="cn">New chat</a><a id="cx2">✕</a></div>
+        <div id="cm"></div>
+        <div id="cc"></div>
+        <div id="imgPreview" style="display:none;padding:6px 0"></div>
+        <div class="ir"><input id="ci" placeholder="Type or tap the mic…"><input id="chatImage" type="file"
+            accept="image/*" hidden><button id="pickImage" class="g" type="button"
+            title="Attach image">＋</button><button id="mic" class="g" type="button">🎤</button><button id="sd"
+            type="button">➤</button></div>
+      </div><button>✦</button>
+    </div>
+  </div>
+  <div id="pr"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./js/supabase.js"></script>
+  <script>
+    const AL = 'data:image/jpeg;base64,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'; const $ = s => document.querySelector(s), E = (s, h) => { $(s).innerHTML = h }, inr = n => '₹' + (+n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+    const DEF = { user: null, acct: null, quotes: [], invoices: [], clients: [], vendors: [], purchases: [], notifications: [], ed: null };
+    let S = JSON.parse(JSON.stringify(DEF)), page = 'Dashboard', mode = 'login', guest = false;
+    try { const x = localStorage.getItem('quoin'); if (x) S = Object.assign(S, JSON.parse(x)) } catch (e) { }
+    const save = () => { try { localStorage.setItem('quoin', JSON.stringify(S)) } catch (e) { } };
+    if (!S.accts) S.accts = S.acct ? [S.acct] : []; if (!S.notifications) S.notifications = [];
+    function notify(title, detail, type = 'info') { S.notifications.unshift({ id: Date.now() + Math.random(), title, detail, type, date: new Date().toISOString(), read: false }); S.notifications = S.notifications.slice(0, 100); save() }
+    function notificationCount() { return S.notifications.filter(n => !n.read).length }
+    const TERMS = '1. Payment: 50% / 70% in advance, balance on completion.\n2. Bank details: as per profile.\n3. Timeline: to be confirmed on order.\n4. Warranty on items if required.';
+    /* AUTH */
+    let sel = 0; $('#alg').src = AL;
+    function pickUI() {
+      E('#at', 'Sign in to Quoin'); E('#af', '<p style="color:var(--mu);font-size:13px;margin:0 0 6px">Choose an account to continue</p>' + S.accts.map((a, i) => `<div class="acc ${i == sel ? 'on' : ''}" data-i="${i}"><i class="av">${a.logo ? '<img src="' + a.logo + '">' : (a.name || '?')[0].toUpperCase()}</i><div><b>${a.name}</b><small>${a.em}${a.biz ? ' · ' + a.biz : ''}</small></div><span class="bdg" style="--c:#14B8A6">${i == 0 ? 'Owner' : 'Member'}</span></div>`).join('') + '<div class="pw"><input id="pw" type="password" placeholder="Password"><button id="ey" type="button">👁</button></div><div style="display:flex;gap:16px;margin:4px 0"><a class="l" id="swa">⇄ Switch account</a></div><button id="ok" style="width:100%;margin-top:6px">Log in to Quoin</button>'); E('#sw', 'Create new account');
+      document.querySelectorAll('.acc').forEach(r => r.onclick = () => { sel = +r.dataset.i; pickUI() }); $('#ey').onclick = () => { const p = $('#pw'); p.type = p.type == 'password' ? 'text' : 'password' };
+      $('#ok').onclick = () => { const a = S.accts[sel]; if ($('#pw').value == a.pw) { S.acct = a; S.user = a; guest = false; enter() } else E('#am', 'Wrong password.') }; $('#swa').onclick = () => { mode = 'login'; authUI() }
+    }
+    function authUI() {
+      if (mode == 'pick' && !S.accts.length) mode = 'login'; if (mode == 'pick') return pickUI(); const c = mode == 'create'; E('#at', c ? 'Create account' : 'Log in');
+      E('#af', (c ? '<input id="un" placeholder="Username"><input id="bn" placeholder="Business name"><input type="file" id="lg" accept="image/*"><input id="gs" placeholder="GST"><input id="ad" placeholder="Registered address"><input id="cp" placeholder="Contact person"><input id="ph" placeholder="Contact number">' : '') + '<input id="em" placeholder="Username / email"><div class="pw"><input id="pw" type="password" placeholder="Password"><button id="ey" type="button">👁</button></div><button id="ok" style="width:100%;margin-top:6px">' + (c ? 'Create account' : 'Log in') + '</button>');
+      E('#sw', c ? 'Existing account? Log in' : 'New? Create account');
+      $('#ey').onclick = () => { const p = $('#pw'); p.type = p.type == 'password' ? 'text' : 'password' }; $('#ok').onclick = submit
+    }
+    $('#sw').onclick = () => { mode = mode == 'create' ? (S.accts.length ? 'pick' : 'login') : 'create'; authUI() }; if (S.accts.length) mode = 'pick';
+    $('#fp').onclick = () => E('#am', 'Password reset link would be sent to your email (backend needed).');
+    $('#go').onclick = () => E('#am', 'Google sign-in needs a backend; use Guest or an account for now.');
+    $('#gu').onclick = () => { guest = true; S.user = { name: 'Guest', biz: 'Guest' }; enter() };
+    function submit() {
+      const em = $('#em').value.trim(), pw = $('#pw').value; if (!em || !pw) return E('#am', 'Enter username/email and password.');
+      if (mode == 'create') {
+        const f = $('#lg').files[0], fin = l => { S.acct = { em, pw, name: $('#un').value || em, biz: $('#bn').value, logo: l, gst: $('#gs').value, addr: $('#ad').value, cp: $('#cp').value, ph: $('#ph').value }; S.accts.push(S.acct); S.user = S.acct; guest = false; save(); enter() };
+        if (f) { const r = new FileReader(); r.onload = () => fin(r.result); r.readAsDataURL(f) } else fin('')
+      }
+      else { const a = S.accts.find(x => (x.em == em || x.name == em) && x.pw == pw); if (a) { S.acct = a; S.user = a; guest = false; enter() } else E('#am', 'No matching account. Create one first.') }
+    }
+    function logo(u, sz) { return '<i>' + (u && u.logo ? '<img src="' + u.logo + '">' : 'Q') + '</i>' }
+    function enter() {
+      $('#auth').style.display = 'none'; $('#app').style.display = 'block'; E('#slogo', '<i><img src="' + AL + '"></i>QUOIN'); E('#su', logo(S.user) + '<span>' + S.user.name + '</span>');
+      const all = ['Dashboard', 'Quotations', 'Invoices', 'Purchases', 'Clients', 'Vendors', 'Saved Data', 'Analytics', 'Settings'], gl = ['Quotations', 'Invoices', 'Settings'];
+      const ls = guest ? gl : all; if (!guest) ls.splice(ls.indexOf('Saved Data'), 0, 'Notifications'); page = ls[0] == 'Quotations' && guest ? 'Quotations' : 'Dashboard'; E('#nav', ls.map(p => `<button class="n" data-p="${p}" style="width:100%">${p}</button>`).join(''));
+      document.querySelectorAll('.n').forEach(b => b.onclick = () => { page = b.dataset.p; if (innerWidth < 700) $('#side').classList.add('h'); render() }); render()
+    }
+    $('#lo').onclick = () => { S.user = null; guest = false; mode = S.accts.length ? 'pick' : 'login'; $('#app').style.display = 'none'; $('#auth').style.display = 'flex'; authUI() };
+    $('#tg').onclick = () => $('#side').classList.toggle('h');
+    /* helpers */
+    const sub = d => (d.items || []).reduce((a, i) => a + amt(i), 0), amt = i => i.u == 'sqft' ? i.w * i.h * i.r * i.q : i.r * i.q;
+    const tot = d => { const s = sub(d), ds = s * (d.disc || 0) / 100, tx = (s - ds) * (d.gst ? d.tax || 0 : 0) / 100; return { s, ds, tx, t: s - ds + tx } };
+    const paid = d => (d.pay || []).filter(p => p.paid).reduce((a, p) => a + p.amt, 0);
+    function render() { document.querySelectorAll('.n').forEach(b => b.classList.toggle('on', b.dataset.p == page)); E('#ttl', page); ({ Dashboard: dash, Quotations: () => docs('quotes'), Invoices: () => docs('invoices'), Purchases: purch, Clients: () => crud('clients'), Vendors: () => crud('vendors'), 'Saved Data': saved, Notifications: notifications, Analytics: anal, Settings: sett })[page]() }
+    /* DASH */
+    function chart(vals, labels) { const m = Math.max(1, ...vals), w = 300 / vals.length; return `<svg viewBox="0 0 320 140" width="100%">${vals.map((v, i) => `<rect x="${10 + i * w + 4}" y="${120 - v / m * 100}" width="${w - 8}" height="${v / m * 100}" rx="4" fill="${i % 2 ? '#14B8A6' : '#FF6B2B'}"/><text x="${10 + i * w + w / 2}" y="136" font-size="9" fill="#a9b3c4" text-anchor="middle">${labels[i]}</text>`).join('')}</svg>` }
+    function area() { const now = new Date(), ms = [...Array(6)].map((_, i) => new Date(now.getFullYear(), now.getMonth() - 5 + i, 1)), v = ms.map(m => S.invoices.filter(i => { const d = new Date(i.date); return !i.nc && d.getMonth() == m.getMonth() && d.getFullYear() == m.getFullYear() }).reduce((a, i) => a + tot(i).t, 0)), mx = Math.max(1, ...v), P = v.map((y, i) => [20 + i * 56, 115 - y / mx * 90]); let p = 'M' + P[0].join(','); for (let i = 1; i < P.length; i++) { const a = P[i - 1], b = P[i], c = (a[0] + b[0]) / 2; p += `C${c},${a[1]} ${c},${b[1]} ${b[0]},${b[1]}` } return `<svg viewBox="0 0 320 150" width="100%"><defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF6B2B" stop-opacity=".55"/><stop offset="1" stop-color="#14B8A6" stop-opacity="0"/></linearGradient></defs><path d="${p}L${P[5][0]},120L${P[0][0]},120Z" fill="url(#ag)"/><path d="${p}" fill="none" stroke="#FF6B2B" stroke-width="2.5"/>${P.map((q, i) => `<circle cx="${q[0]}" cy="${q[1]}" r="3" fill="#14B8A6"/><text x="${q[0]}" y="138" font-size="9" fill="#8FA0B8" text-anchor="middle">${ms[i].toLocaleString('en', { month: 'short' })}</text>`).join('')}</svg>` }
+    function dash() {
+      const today = new Date().toISOString().slice(0, 10); (S.purchases || []).forEach(p => { if (p.warranty && p.warranty.expiry) { const days = Math.ceil((new Date(p.warranty.expiry + 'T00:00:00') - new Date(today + 'T00:00:00')) / 86400000); if (days >= 0 && days <= 30 && p.warranty.lastAlertDate !== today) { notify('Warranty nearing expiry', `${p.cat} · ${p.v || 'Vendor'} expires on ${p.warranty.expiry} (${days} days left)`, 'warranty'); p.warranty.lastAlertDate = today; save() } } }); const inv = S.invoices.filter(i => !i.nc), rev = inv.reduce((a, i) => a + tot(i).t, 0);
+      const act = [...S.quotes.map(q => ['Quote ' + q.no, q.client, q.date]), ...S.invoices.map(q => ['Invoice ' + q.no, q.client, q.date])].sort((a, b) => b[2] > a[2] ? 1 : -1).slice(0, 6);
+      E('#v', `<p style="font-size:22px;font-weight:700;margin:0">Welcome to Quoin, ${S.user.name} 👋</p><div class="ph" style="margin:2px 0 14px">Overview of your Quoin business · ${new Date().toLocaleDateString()}</div><div class="cards">${[['Quotations', S.quotes.length, '📝', '#FF6B2B', S.quotes.filter(q => q.rev > 0).length + ' revised'], ['Invoices', S.invoices.length, '🧾', '#14B8A6', inv.filter(i => paid(i) < tot(i).t).length + ' pending'], ['Clients', S.clients.length, '👥', '#38BDF8', S.vendors.length + ' vendors'], ['Revenue', inr(rev), '📈', '#22C55E', inr(inv.reduce((a, i) => a + paid(i), 0)) + ' received']].map(c => `<div class="glass stat" style="--c:${c[3]}"><div class="hd"><span>${c[0]}</span><div class="ic">${c[2]}</div></div><b>${c[1]}</b><small>${c[4]}</small></div>`).join('')}</div>
+<div class="cards"><div class="glass"><b style="font-size:15px">Revenue Activity</b><div class="ph">Last 6 months · invoiced amount</div>${area()}</div>
+<div class="glass"><b style="font-size:15px">Recent Activity</b><div class="ph">Latest actions across the platform</div>${act.length ? act.map(a => `<div class="act" style="--c:${a[0][0] == 'Q' ? '#FF6B2B' : '#14B8A6'}"><div class="ic2">${a[0][0] == 'Q' ? '📝' : '🧾'}</div><div>${a[0]}<small>Client: ${a[1] || '—'} · ${a[2]}</small></div><span class="bdg">${a[0][0] == 'Q' ? 'Quote' : 'Invoice'}</span></div>`).join('') : '<p style="color:var(--mu)">Nothing yet. Create a quotation.</p>'}</div></div>`)
+    }
+    /* DOCS */
+    function docs(k) {
+      const q = k == 'quotes', L = S[k], e = S.ed && S.ed.k == k ? S.ed.d : null; let d = e || { items: [{ d: '', w: 1, h: 1, r: 0, q: 1, u: 'sqft' }], tax: 18, gst: true, disc: 0, terms: TERMS, date: new Date().toISOString().slice(0, 10), client: '', no: (q ? 'Q-' : 'INV-') + String(L.length + 1).padStart(3, '0'), rev: 0, pay: [{ n: 'Advance', pct: 50, paid: false }, { n: 'Final', pct: 50, paid: false }] }; window.D = d;
+      E('#v', `<div class="glass" style="margin-bottom:14px"><h3 style="margin:0">${e && S.ed.i >= 0 ? 'Edit' : 'New'} ${q ? 'quotation' : 'invoice'} ${d.rev ? '<span class="tag o">Rev ' + d.rev + '</span>' : ''}</h3>
+<div class="row"><input id="dn" value="${d.no}" placeholder="No"><input id="dd" type="date" value="${d.date}"><input id="dc" list="cl" value="${d.client}" placeholder="Client"><datalist id="cl">${S.clients.map(c => `<option>${c.name}`).join('')}</datalist></div>
+<div class="tw"><table id="it"></table></div><button class="g" id="ai">+ Item</button>
+<div class="row" style="margin-top:8px"><select id="dg"><option value="1" ${d.gst ? 'selected' : ''}>GST</option><option value="0" ${d.gst ? '' : 'selected'}>Non-GST</option></select><input id="dx" type="number" value="${d.tax}" placeholder="Tax %"><input id="ds" type="number" value="${d.disc}" placeholder="Discount %"></div>
+<div class="tot" id="tt"></div>${q ? '' : '<div id="py"></div>'}<textarea id="tm" rows="4">${d.terms}</textarea>
+<div class="acts"><button id="sv">${e && S.ed.i >= 0 ? 'Save revision' : 'Save'}</button><button class="g" id="cx">Clear</button></div></div>
+<div class="glass tw"><table><tr><th>No<th>Client<th>Date<th>Amount<th>${q ? 'Rev' : 'Status'}<th></tr>${[...L].reverse().map((x, i) => `<tr><td>${x.no}${x.nc ? ' <span class="tag o">NC</span>' : ''}<td>${x.client}<td>${x.date}<td>${inr(tot(x).t)}<td>${q ? x.rev : (paid(x) >= tot(x).t && tot(x).t ? 'Paid' : 'Pending')}<td class="acts"><button class="t" data-a="e" data-i="${L.indexOf(x)}">Edit</button><button class="g" data-a="p" data-i="${L.indexOf(x)}">Download / Print PDF</button><button class="g" data-a="m" data-i="${L.indexOf(x)}">Gmail</button>${q?`<button class="g" data-a="c" data-i="${L.indexOf(x)}">Convert</button>`:''}${q ? '' : `<button class="g" data-a="n" data-i="${L.indexOf(x)}">Duplicate</button>`}<button class="d" data-a="x" data-i="${L.indexOf(x)}">Delete</button></tr>`).join('')}</table></div>`);
+      const sync = () => { d.no = $('#dn').value; d.date = $('#dd').value; d.client = $('#dc').value; d.gst = $('#dg').value == '1'; d.tax = +$('#dx').value; d.disc = +$('#ds').value; d.terms = $('#tm').value };
+      const draw = () => {
+        E('#it', '<tr><th>Description<th>W<th>H<th>Rate<th>Qty<th>Unit<th>Amount<th></tr>' + d.items.map((i, n) => `<tr><td><input data-n="${n}" data-f="d" value="${i.d}"><td><input type="number" data-n="${n}" data-f="w" value="${i.w}"><td><input type="number" data-n="${n}" data-f="h" value="${i.h}"><td><input type="number" data-n="${n}" data-f="r" value="${i.r}"><td><input type="number" data-n="${n}" data-f="q" value="${i.q}"><td><select data-n="${n}" data-f="u"><option ${i.u == 'sqft' ? 'selected' : ''}>sqft<option ${i.u == 'piece' ? 'selected' : ''}>piece</select><td>${inr(amt(i))}<td><button class="d" data-r="${n}">×</button></tr>`).join(''));
+        const t = tot(d); E('#tt', `Subtotal ${inr(t.s)}<br>Discount −${inr(t.ds)}<br>Tax +${inr(t.tx)}<br><b>Total ${inr(t.t)}</b>`);
+        if (!q) E('#py', d.pay.map((p, n) => `<div style="margin:6px 0">${p.n} <input style="width:70px;display:inline" type="number" data-p="${n}" value="${p.pct}">% = ${inr(t.t * p.pct / 100)} <label><input style="width:auto" type="checkbox" data-c="${n}" ${p.paid ? 'checked' : ''}> paid</label></div>`).join(''));
+        d.pay && d.pay.forEach(p => p.amt = t.t * p.pct / 100);
+        document.querySelectorAll('#it input,#it select').forEach(x => x.onchange = () => { const i = d.items[x.dataset.n], f = x.dataset.f; i[f] = ['d', 'u'].includes(f) ? x.value : +x.value; sync(); draw() });
+        document.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { d.items.splice(b.dataset.r, 1); draw() });
+        document.querySelectorAll('[data-p]').forEach(x => x.onchange = () => { d.pay[x.dataset.p].pct = +x.value; draw() }); document.querySelectorAll('[data-c]').forEach(x => x.onchange = () => { d.pay[x.dataset.c].paid = x.checked; draw() });
+        ['#dg', '#dx', '#ds'].forEach(s => $(s).onchange = () => { sync(); draw() })
+      }; draw();
+      $('#ai').onclick = () => { sync(); d.items.push({ d: '', w: 1, h: 1, r: 0, q: 1, u: 'sqft' }); draw() };
+      $('#cx').onclick = () => { S.ed = null; docs(k) };
+      $('#sv').onclick = () => {
+        sync(); if (!d.client) return alert('Add a client name.'); if (e && S.ed.i >= 0) { d.rev = (d.rev || 0) + 1; S[k][S.ed.i] = d } else S[k].push(d);
+        if (!S.clients.find(c => c.name == d.client) && confirm('New client. Save to Clients list?')) S.clients.push({ name: d.client, gstin: '', addr: '', cat: '', cp: '', mail: '' }); notify(q ? 'New quotation created' : 'New invoice created', `${d.no} · ${d.client} · ${inr(tot(d).t)}`, q ? 'quote' : 'invoice'); S.ed = null; save(); docs(k)
+      };
+      document.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
+        const i = +b.dataset.i, a = b.dataset.a;
+        if (a == 'e') { S.ed = { k, d: JSON.parse(JSON.stringify(S[k][i])), i }; docs(k) }
+        if (a == 'x' && confirm('Delete?')) { S[k].splice(i, 1); save(); docs(k) }
+        if (a == 'n') { const c = JSON.parse(JSON.stringify(S[k][i])); c.nc = true; c.no = c.no + '-DUP'; S[k].push(c); save(); docs(k) } 
+          if (a == 'c' && confirm('Convert this Quotation to Invoice?')) { const c = JSON.parse(JSON.stringify(S[k][i])); c.q=false; if(!S['invoices']) S['invoices']=[]; c.no = 'INV-' + String(S['invoices'].length + 1).padStart(3, '0'); S['invoices'].push(c); save(); alert('Converted to '+c.no); docs('invoices');
+        }
+        if (a == 'p') prn(S[k][i], q); if (a == 'm') { const x = S[k][i], subject = encodeURIComponent((q ? 'Quotation ' : 'Invoice ') + x.no + ' from ' + ((S.acct || S.user || {}).biz || 'Quoin')), body = encodeURIComponent('Hello ' + x.client + ',\n\nPlease find the ' + (q ? 'quotation' : 'invoice') + ' details for ' + x.no + '.\nTotal: ' + inr(tot(x).t) + '\n\nRegards,\n' + ((S.acct || S.user || {}).biz || 'Quoin') + '\n\nPlease attach the downloaded PDF before sending.'); window.open('https://mail.google.com/mail/?view=cm&fs=1&su=' + subject + '&body=' + body, '_blank') }
+      })
+    }
+    function prn(d, q) { const u = S.acct || S.user, t = tot(d); E('#pr', `<div style="display:flex;align-items:center;gap:10px">${u.logo ? '<img src="' + u.logo + '" style="height:48px">' : ''}<h2 style="margin:0">${u.biz || 'Quoin'}</h2></div><div>${u.addr || ''} · GST ${u.gst || '-'} · ${u.cp || ''} ${u.ph || ''}</div><h3>${q ? 'QUOTATION' : 'INVOICE'} ${d.no}${d.nc ? ' (NC)' : ''}</h3><div>Date: ${d.date} · To: ${d.client}</div><table><tr><th>Description<th>Size<th>Rate<th>Qty<th>Amount</tr>${d.items.map(i => `<tr><td>${i.d}<td>${i.u == 'sqft' ? i.w + '×' + i.h + ' (' + i.w * i.h + ' sqft)' : 'pc'}<td>${i.r}<td>${i.q}<td>${inr(amt(i))}</tr>`).join('')}</table><p style="text-align:right">Subtotal ${inr(t.s)}<br>Discount ${inr(t.ds)}<br>Tax ${inr(t.tx)}<br><b>Total ${inr(t.t)}</b></p><pre style="font-family:inherit;white-space:pre-wrap">${d.terms}</pre>`); setTimeout(() => { window.print() }, 150) }
+    /* PURCHASES */
+    function purch() {
+      E('#v', `<div class="glass" style="margin-bottom:14px"><div class="row"><input id="pd" type="date" value="${new Date().toISOString().slice(0, 10)}"><select id="pc">${['Fabrication', 'ACP', 'Cladding', 'Printing', 'Mounting', 'Materials', 'Electricals', 'Others'].map(x => `<option>${x}`).join('')}</select><input id="pv" list="vl" placeholder="Vendor"><datalist id="vl">${S.vendors.map(v => `<option>${v.name}`).join('')}</datalist><input id="pa" type="number" placeholder="Amount"><input id="px" type="number" placeholder="Tax %"><input id="pi" type="number" placeholder="Discount %"></div><div class="row" style="margin-top:8px"><label style="font-size:12px;color:var(--mu)">Warranty duration (months)<input id="wm" type="number" min="0" placeholder="e.g. 12"></label><label style="font-size:12px;color:var(--mu)">Warranty start date<input id="ws" type="date" value="${new Date().toISOString().slice(0, 10)}"></label><input id="wt" placeholder="Warranty terms (optional)"></div><button id="ps" style="margin-top:6px">Add purchase</button></div>
+<div class="glass tw"><table><tr><th>Date<th>Category<th>Vendor<th>Amount<th>Warranty<th>Expiry<th></tr>${S.purchases.map((p, i) => { const ex = p.warranty && p.warranty.expiry, expired = ex && ex < new Date().toISOString().slice(0, 10); return `<tr><td>${p.date}<td>${p.cat}<td>${p.v}<td>${inr(p.amt)}<td>${p.warranty?.months ? p.warranty.months + ' months' : '—'}<td>${ex || '—'} ${ex ? `<span class="tag ${expired ? 'o' : ''}">${expired ? 'Expired' : 'Active'}</span>` : ''}<td><button class="d" data-x="${i}">×</button></tr>` }).join('')}</table></div>`);
+      $('#ps').onclick = () => { const a = +$('#pa').value; if (!a) return alert('Enter a purchase amount.'); const t = a - a * (+$('#pi').value || 0) / 100, months = Math.max(0, +$('#wm').value || 0), start = $('#ws').value || $('#pd').value; let warranty = null; if (months) { const ex = new Date(start + 'T00:00:00'); ex.setMonth(ex.getMonth() + months); warranty = { months, start, expiry: ex.toISOString().slice(0, 10), terms: $('#wt').value || '' } } S.purchases.push({ date: $('#pd').value, cat: $('#pc').value, v: $('#pv').value, amt: t + t * (+$('#px').value || 0) / 100, warranty }); notify('New purchase added', `${$('#pc').value} · ${$('#pv').value || 'Vendor not specified'} · ${inr(t)}`, 'purchase'); save(); purch() };
+      document.querySelectorAll('[data-x]').forEach(b => b.onclick = () => { S.purchases.splice(b.dataset.x, 1); save(); purch() }); if (window.PP) { const p = window.PP; $('#pc').value = p.cat; $('#pv').value = p.v; $('#pa').value = p.a; $('#px').value = p.x; $('#pi').value = p.i; window.PP = null }
+    }
+    /* CLIENTS / VENDORS */
+    function validGSTIN(v) { return /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test((v || '').trim().toUpperCase()) }
+    function crud(k) {
+      const c = k == 'clients', F = c ? [['name', 'Client name'], ['gstin', 'GSTIN'], ['addr', 'Registered address'], ['cat', 'Category (Real estate, Agency, Branding, Shop)'], ['cp', 'Contact person'], ['ph', 'Contact no'], ['mail', 'Mail id']] : [['name', 'Vendor name'], ['gstin', 'GSTIN (blank = non-GST)'], ['addr', 'Registered address'], ['cat', 'Category (Fabrication, ACP, Cladding, Printing, Mounting…)'], ['cp', 'Contact person'], ['ph', 'Contact no']];
+      E('#v', `<div class="glass" style="margin-bottom:14px"><div class="row">${F.map(f => `<input id="f_${f[0]}" placeholder="${f[1]}">`).join('')}</div><button id="cs" style="margin-top:6px">Add</button><small style="display:block;color:var(--mu);margin-top:8px">GSTIN format is checked locally. Automatic business-name/address lookup requires a GST verification provider and secure backend; no GST data is fabricated.</small></div><div class="glass tw"><table><tr>${F.map(f => `<th>${f[0].toUpperCase()}`).join('')}<th></tr>${S[k].map((r, i) => `<tr>${F.map(f => `<td>${r[f[0]] || ''}`).join('')}<td><button class="d" data-x="${i}">×</button></tr>`).join('')}</table></div>`);
+      $('#cs').onclick = () => { const r = {}; F.forEach(f => r[f[0]] = $('#f_' + f[0]).value); if (!r.name) return; if (r.gstin && !validGSTIN(r.gstin)) return alert('Please enter a valid 15-character GSTIN.'); S[k].push(r); notify(c ? 'New client added' : 'New vendor added', r.name, c ? 'client' : 'vendor'); save(); crud(k) };
+      document.querySelectorAll('[data-x]').forEach(b => b.onclick = () => { S[k].splice(b.dataset.x, 1); save(); crud(k) })
+    }
+    /* NOTIFICATIONS */
+    function notifications() { const items = S.notifications || []; E('#v', `<div class="glass" style="margin-bottom:12px"><div style="display:flex;align-items:center;gap:10px"><h3 style="margin:0;flex:1">Notification centre</h3><button class="g" id="nread">Mark all read</button><button class="d" id="nclear">Clear all</button></div><p class="ph">Business activity notifications saved on this device.</p>${items.length ? items.map(n => `<div class="act" style="--c:${n.read ? '#8FA0B8' : '#14B8A6'}"><div class="ic2">${n.type === 'purchase' ? '🛒' : n.type === 'invoice' ? '🧾' : n.type === 'quote' ? '📝' : '🔔'}</div><div><b>${n.title}</b><small>${n.detail} · ${new Date(n.date).toLocaleString()}</small></div><span class="bdg">${n.read ? 'Read' : 'New'}</span></div>`).join('') : '<p style="color:var(--mu)">No notifications yet. New quotations, invoices, clients, vendors and purchases will appear here.</p>'}</div>`); $('#nread').onclick = () => { S.notifications.forEach(n => n.read = true); save(); notifications() }; $('#nclear').onclick = () => { if (confirm('Clear all notifications?')) { S.notifications = []; save(); notifications() } } }
+    /* SAVED */
+    function saved() {
+      const sec = (n, l, f) => `<div class="glass" style="margin-bottom:12px"><h3 style="margin:0 0 6px">${n} (${l.length})</h3>${[...l].reverse().map(f).join('') || '<span style="color:var(--mu)">None saved.</span>'}</div>`;
+      E('#v', sec('Invoices', S.invoices, x => `<div>${x.no} · ${x.client} · ${inr(tot(x).t)}</div>`) + sec('Quotes', S.quotes, x => `<div>${x.no} (rev ${x.rev}) · ${x.client} · ${inr(tot(x).t)}</div>`) + sec('Purchases', S.purchases, x => `<div>${x.date} · ${x.cat} · ${x.v} · ${inr(x.amt)}</div>`))
+    }
+    /* ANALYTICS */
+    function stats() { const inv = S.invoices.filter(i => !i.nc), a = inv.reduce((s, i) => s + tot(i).t, 0), r = inv.reduce((s, i) => s + paid(i), 0), p = S.purchases.reduce((s, x) => s + x.amt, 0); return { a, r, bal: a - r, p, pr: a - p } }
+    function anal() { const s = stats(); E('#v', `<div class="cards">${[['Invoiced income', inr(s.a)], ['Received income', inr(s.r)], ['Balance / pending', inr(s.bal)], ['Purchases', inr(s.p)], ['Profit (invoice − purchases)', inr(s.pr)], ['Clients', S.clients.length], ['Vendors', S.vendors.length]].map(c => `<div class="glass stat"><span>${c[0]}</span><b>${c[1]}</b></div>`).join('')}</div><div class="glass">${chart([s.a, s.r, s.bal, s.p, Math.max(0, s.pr)], ['Invoiced', 'Received', 'Pending', 'Bought', 'Profit'])}</div><p style="color:var(--mu)">Duplicate invoices marked NC are excluded.</p>`) }
+    /* SETTINGS */
+    function sett() {
+      const u = S.acct || {}; E('#v', `<div class="glass"><h3 style="margin-top:0">Business profile</h3><div style="display:flex;align-items:center;gap:14px;margin-bottom:10px"><div class="logo" id="lp" style="font-size:0">${logo(u)}</div><div><input type="file" id="sl" accept="image/*" style="margin:0"><small style="color:var(--mu)">Business logo · shown in the sidebar and on printed quotes/invoices</small> <a class="l" id="rl">Remove</a></div></div><div class="row">${[['biz', 'Business name'], ['gst', 'GST'], ['addr', 'Registered address'], ['cp', 'Contact person'], ['ph', 'Contact number']].map(f => `<input id="s_${f[0]}" placeholder="${f[1]}" value="${u[f[0]] || ''}">`).join('')}</div><button id="sp" style="margin-top:8px">Save profile</button><button class="d" id="rs" style="margin:8px 0 0 8px">Reset all data</button><p style="color:var(--mu)">${guest ? 'Guest mode: profile saves are disabled.' : ''}</p></div>`);
+      window.NL = null; $('#sl').onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { const im = new Image(); im.onload = () => { const s = Math.min(1, 256 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = im.width * s; c.height = im.height * s; c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); window.NL = c.toDataURL('image/png'); $('#lp').innerHTML = '<i><img src="' + NL + '"></i>' }; im.src = r.result }; r.readAsDataURL(f) }; $('#rl').onclick = () => { window.NL = ''; $('#lp').innerHTML = '<i>Q</i>' };
+      $('#sp').onclick = () => { if (guest || !S.acct) return alert('Create an account to save a profile.');['biz', 'gst', 'addr', 'cp', 'ph'].forEach(f => S.acct[f] = $('#s_' + f).value); if (window.NL !== null) S.acct.logo = window.NL; S.user = S.acct; save(); E('#slogo', '<i><img src="' + AL + '"></i>QUOIN'); E('#su', logo(S.user) + '<span>' + S.user.name + '</span>'); alert('Saved') };
+      $('#rs').onclick = () => { if (confirm('Erase everything?')) { try { localStorage.removeItem('quoin') } catch (e) { } S = JSON.parse(JSON.stringify(DEF)); location.reload() } }
+    }
+    /* BOT */
+    S.chat = S.chat || []; let bs = { step: 'idle' }, bd = {}; const CATS = ['Fabrication', 'ACP', 'Cladding', 'Printing', 'Mounting', 'Materials', 'Electricals', 'Others'];
+    const nm = k => ({ quotes: 'quotation', invoices: 'invoice', purchases: 'purchase' })[k];
+    const bm = (w, t) => { S.chat.push({ w, t }); S.chat = S.chat.slice(-40); save(); showMsgs() };
+    function showMsgs() { const m = $('#cm'); m.innerHTML = S.chat.map(x => `<div class="bb ${x.w}">${x.t}</div>`).join(''); m.scrollTop = m.scrollHeight }
+    function chips(a) { E('#cc', a.map(x => `<button class="g ch">${x}</button>`).join('')); document.querySelectorAll('#cc .ch').forEach(b => b.onclick = () => { bm('u', b.textContent); flow(b.textContent) }) }
+    const topics = () => guest ? ['Quotations', 'Invoices'] : ['Quotations', 'Invoices', 'Purchases'];
+    function greet() { bm('b', 'Hi, how can I help you? 👋 Choose a related query:'); bs = { step: 'topic' }; bd = {}; chips(topics()) }
+    function go(p, msg) { page = p; render(); bm('b', msg); chips(['Start over']); if (innerWidth < 700) $('#chat').style.display = 'none' }
+    function ask(qs, done) { bs = { step: 'ask', qs, i: 0, done }; nextQ() }
+    function nextQ() { const q = bs.qs[bs.i]; bm('b', q[1]); if (q[2]) chips(q[2]); else E('#cc', '') }
+    function details() { bm('b', 'Great. Now the description and requirements.'); ask([['desc', 'Description of the work?'], ['w', 'Width (ft)?'], ['h', 'Height (ft)?'], ['r', 'Rate per sqft (₹)?'], ['q', 'Quantity?']], finish) }
+    function finish() {
+      const k = bd.k, L = S[k], d = { items: [{ d: bd.desc, w: +bd.w || 1, h: +bd.h || 1, r: +bd.r || 0, q: +bd.q || 1, u: 'sqft' }], tax: 18, gst: true, disc: 0, terms: TERMS, date: new Date().toISOString().slice(0, 10), client: bd.client, no: (k == 'quotes' ? 'Q-' : 'INV-') + String(L.length + 1).padStart(3, '0'), rev: 0, pay: [{ n: 'Advance', pct: 50, paid: false }, { n: 'Final', pct: 50, paid: false }] };
+      if (bd.newc && !S.clients.find(c => c.name == bd.client)) S.clients.push({ name: bd.client, gstin: bd.gstin, addr: bd.addr, cp: bd.cp, ph: bd.ph, cat: '', mail: '' });
+      S.ed = { k, d, i: -1 }; save(); go(k == 'quotes' ? 'Quotations' : 'Invoices', 'Everything is filled in. Go to the end of the page to verify, then press Save.')
+    }
+    function flow(t) {
+      const l = t.toLowerCase().trim(), st = bs.step;
+      if (l == 'start over') return greet();
+      if (st == 'topic') { const k = l.includes('quot') ? 'quotes' : l.includes('inv') ? 'invoices' : l.includes('purch') ? 'purchases' : null; if (!k) return bm('b', 'Please pick Quotations, Invoices or Purchases.'); if (guest && k == 'purchases') return bm('b', 'Guest login can only use Quotations and Invoices.'); bd = { k }; bs = { step: 'ne' }; bm('b', 'Is it a new ' + nm(k) + ' or an existing one?'); return chips(['New', 'Existing']) }
+      if (st == 'ne') {
+        const k = bd.k;
+        if (!l.includes('exist')) { if (k == 'purchases') return ask([['cat', 'Category?', CATS], ['v', 'Vendor name?'], ['a', 'Amount (₹)?'], ['x', 'Tax %? (type 0 if none)'], ['i', 'Discount %? (type 0 if none)']], () => { window.PP = bd; go('Purchases', 'Details are filled in. Please verify and press “Add purchase”.') }); bs = { step: 'cl' }; bm('b', 'Add a new client or use an existing client?'); return chips(['Add client', 'Existing client']) }
+        if (k == 'purchases') return go('Purchases', 'Here are your saved purchases.');
+        const L = S[k]; if (!L.length) { bm('b', 'No saved ' + nm(k) + 's yet. Let’s create a new one.'); return flow('new') }
+        bs = { step: 'pick' }; bm('b', 'Select one to open:'); bd.list = L.slice(-6).reverse(); return chips(bd.list.map(x => x.no + ' · ' + x.client))
+      }
+      if (st == 'pick') { const x = (bd.list || []).find(y => t.startsWith(y.no)); if (!x) return bm('b', 'Please tap one of the options.'); S.ed = { k: bd.k, d: JSON.parse(JSON.stringify(x)), i: S[bd.k].indexOf(x) }; return go(bd.k == 'quotes' ? 'Quotations' : 'Invoices', 'Opened ' + x.no + '. Please verify the details on the page.') }
+      if (st == 'cl') {
+        if (l.includes('exist')) { if (!S.clients.length) { bm('b', 'No saved clients yet, so let’s add one.'); return flow('add client') } bs = { step: 'cpick' }; bm('b', 'Choose the client:'); return chips(S.clients.slice(0, 8).map(c => c.name)) }
+        return ask([['client', 'Client name?'], ['gstin', 'Client GSTIN? (type - to skip)'], ['addr', 'Registered address?'], ['cp', 'Contact person?'], ['ph', 'Contact number?']], () => { bd.newc = true; details() })
+      }
+      if (st == 'cpick') { const c = S.clients.find(c => c.name.toLowerCase() == l); if (!c) return bm('b', 'Please tap a client name.'); bd.client = c.name; return details() }
+      if (st == 'ask') { const q = bs.qs[bs.i]; bd[q[0]] = t; bs.i++; if (bs.i < bs.qs.length) return nextQ(); const d = bs.done; bs = { step: 'idle' }; E('#cc', ''); return d() }
+      answer(l)
+    }
+    function answer(l) {
+      const s = stats();
+      if (/(new|create|make|add)/.test(l) && /(quot|invoice|purchase)/.test(l)) { bs = { step: 'topic' }; return flow(l) }
+      let a = null; if (/profit/.test(l)) a = 'Profit: ' + inr(s.pr); else if (/pending|balance/.test(l)) a = 'Pending: ' + inr(s.bal); else if (/revenue|income/.test(l)) a = 'Invoiced ' + inr(s.a) + ', received ' + inr(s.r) + ' across ' + S.invoices.length + ' invoices.'; else if (/clients?/.test(l)) a = S.clients.length + ' clients.'; else if (/vendors?/.test(l)) a = S.vendors.length + ' vendors.';
+      if (a) { bm('b', a); return } bm('b', 'I can help with Quotations, Invoices or Purchases. Pick one:'); bs = { step: 'topic' }; chips(topics())
+    }
+    function send() { const v = $('#ci').value.trim(); if (!v && !selectedChatImage) return; if (selectedChatImage) { bm('b', 'Image selected: ' + selectedChatImage.name + '. Image preview is available, but image understanding is not connected yet. To let Quoin AI analyse images, a secure vision API/backend must be configured.'); selectedChatImage = null; $('#chatImage').value = ''; $('#imgPreview').style.display = 'none'; E('#imgPreview', '') } if (v) { $('#ci').value = ''; bm('u', v.replace(/</g, '&lt;')); flow(v) } }
+    $('#ci').onkeydown = e => { if (e.key == 'Enter') send() }; $('#sd').onclick = send;
+    $('#cn').onclick = () => { S.chat = []; save(); greet() }; $('#cx2').onclick = () => $('#chat').style.display = 'none';
+    $('#bot>button').onclick = () => { const c = $('#chat'), o = c.style.display == 'block'; c.style.display = o ? 'none' : 'block'; if (!o) { showMsgs(); const last = S.chat[S.chat.length - 1]; if (last && last.t.startsWith('Hi, how can I help')) { bs = { step: 'topic' }; bd = {}; chips(topics()) } else greet() } };
+    let selectedChatImage = null;
+    $('#pickImage').onclick = () => $('#chatImage').click();
+    $('#chatImage').onchange = () => { const f = $('#chatImage').files[0]; if (!f) return; if (!f.type.startsWith('image/')) return alert('Please choose an image file.'); if (f.size > 8 * 1024 * 1024) { $('#chatImage').value = ''; return alert('Please choose an image smaller than 8 MB.') } selectedChatImage = f; const url = URL.createObjectURL(f); E('#imgPreview', `<div style="display:flex;align-items:center;gap:8px"><img src="${url}" alt="Selected image preview" style="width:58px;height:58px;object-fit:cover;border-radius:8px"><span style="font-size:12px;color:var(--mu);flex:1">${f.name}</span><button type="button" class="d" id="removeChatImage">Remove</button></div>`); $('#imgPreview').style.display = 'block'; $('#removeChatImage').onclick = () => { selectedChatImage = null; $('#chatImage').value = ''; $('#imgPreview').style.display = 'none'; E('#imgPreview', '') } };
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition; let rec = null;
+    $('#mic').onclick = () => { if (!SR) return bm('b', 'Voice input is not supported in this browser. Please type instead.'); if (rec) { rec.stop(); return } rec = new SR(); rec.lang = 'en-IN'; rec.onresult = e => { $('#ci').value = e.results[0][0].transcript; send() }; rec.onerror = () => bm('b', 'Could not use the microphone here. Please allow mic access or type instead.'); rec.onend = () => { rec = null; $('#mic').classList.remove('rec') }; $('#mic').classList.add('rec'); try { rec.start() } catch (e) { rec = null } };
+    // Allow Enter to submit the active authentication screen, including the account picker.
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || e.defaultPrevented || e.isComposing) return;
+      const auth = document.getElementById('auth');
+      if (!auth || getComputedStyle(auth).display === 'none') return;
+      if (!(e.target instanceof HTMLInputElement)) return;
+      e.preventDefault();
+      const submitButton = document.getElementById('ok');
+      if (submitButton && !submitButton.disabled) submitButton.click();
+    });
+
+    authUI();
+  </script>
+</body>
+
+</html>
