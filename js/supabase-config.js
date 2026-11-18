@@ -4,7 +4,7 @@
   const ready = !!(window.supabase && cfg.url && cfg.publishableKey && !cfg.url.includes('YOUR_PROJECT'));
   const client = ready ? window.supabase.createClient(cfg.url, cfg.publishableKey) : null;
   window.QuoinCloud = {
-    ready,
+    
     client,
     async signUp(email, password) {
       if (!client) throw new Error('Supabase is not configured.');

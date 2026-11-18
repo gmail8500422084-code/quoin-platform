@@ -719,6 +719,12 @@
     </div>
   </div>
   <div id="pr"></div>
+ <script>
+  window.QUOIN_SUPABASE_CONFIG = {
+    url: "https://lakugakqbjhkdkzggizr.supabase.co",
+    publishableKey: "PASTE-YOUR-KEY-HERE"
+  };
+</script> 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./js/supabase.js"></script>
   <script>
@@ -746,8 +752,7 @@
     }
     $('#sw').onclick = () => { mode = mode == 'create' ? (S.accts.length ? 'pick' : 'login') : 'create'; authUI() }; if (S.accts.length) mode = 'pick';
     $('#fp').onclick = () => E('#am', 'Password reset link would be sent to your email (backend needed).');
-    $('#go').onclick = () => E('#am', 'Google sign-in needs a backend; use Guest or an account for now.');
-    $('#gu').onclick = () => { guest = true; S.user = { name: 'Guest', biz: 'Guest' }; enter() };
+    $('#go').onclick = async () => { const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/index.html' } }); if (error) E('#am', error.message); };    $('#gu').onclick = () => { guest = true; S.user = { name: 'Guest', biz: 'Guest' }; enter() };
     function submit() {
       const em = $('#em').value.trim(), pw = $('#pw').value; if (!em || !pw) return E('#am', 'Enter username/email and password.');
       if (mode == 'create') {
